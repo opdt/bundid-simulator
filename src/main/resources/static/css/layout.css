@@ -1,0 +1,17 @@
+/* custom styles */
+body {
+    background-color: #f9f9f9;
+}
+
+nav {
+    /* background-color: #e2001a; */
+    background-color: #0174b3;
+    color:white
+}
+
+footer {
+    /* background-color: #595959; */
+    background-color: #0174b3;
+    color:white;
+}
+

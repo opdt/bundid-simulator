@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<samlp:Response
+        xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+        xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+        xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+        ID="[(${params.id})]" InResponseTo="[(${params.requestId})]" IssueInstant="[(${params.created})]"
+        Destination="[(${params.ascUrl})]"
+        Version="2.0">
+
+  <saml:Issuer>[(${params.idpId})]</saml:Issuer>
+  <samlp:Status>
+    <samlp:StatusCode Value="[(${status.majorCode})]">
+      <samlp:StatusCode Value="[(${status.minorCode})]"/>
+    </samlp:StatusCode>
+    <samlp:StatusMessage>[(${status.message})]</samlp:StatusMessage>
+  </samlp:Status>
+</samlp:Response>
+

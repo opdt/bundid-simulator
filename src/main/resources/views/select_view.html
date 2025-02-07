@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head data-th-insert="~{fragments/snippets :: head}">
+    <title>Eid-BundID-IdpMock</title>
+</head>
+<body>
+    <nav data-th-replace="~{fragments/snippets :: navbar}"></nav>
+    <div class="container">
+        <form action="#" data-th-action="@{__${basepath}__/select/submit}" method="post" data-th-object="${formdata}">
+            <div class="row">
+                <h1>Personen</h1>
+            </div>
+            <!-- Anzeige Personenliste als Radio-Group -->
+            <div class="row row-cols-3 g-2">
+                <div class="col" th:each="user, iterStat: ${userlist}">
+                    <div class="card p-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" data-th-value="${user.id}" data-th-field="*{userId}" name="r" id="id" data-th-id="'user_' + ${iterStat.count}">
+                            <label class="form-check-label" for="id" data-th-for="'user_' + ${iterStat.count}">
+                                <span class="fw-bold" data-th-text="${user.givenname} + ' ' + ${user.surname}">a</span> (<span data-th-text="${user.mail}"></span>) <br>
+                                <span data-th-if="${user.postalAddress}" data-th-text="${user.postalAddress} + ', ' + ${user.postalCode} + ' ' + ${user.localityName} ">b</span>
+                                <span data-th-if="${user.country}" data-th-text="', ' + ${user.country}">c</span><br>
+                                <span data-th-text="${templateTools.formatDate(user.birthdate)}"></span>
+                                <span data-th-if="${user.placeOfBirth}" data-th-text="'in ' + ${user.placeOfBirth}"></span><br>
+                                bPK2: <code><span data-th-text="${user.bpk2}"></span></code>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mb-3 mt-2">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary"
+                            th:formaction="@{__${basepath}__/edit}">Person bearbeiten (optional)</button>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <h1>Identifizierung</h1>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="identWith" th:field="*{identifikationWith}">
+                            identWithList
+                            <option th:each="item : ${identWithList}" th:value="${item[0]}" th:text="${item[1]}">a</option>
+                        </select>
+                        <label for="identWith">Identifizierung mit::</label>
+                    </div>
+                </div>
+                <div class="col-2 offset-1">
+                    <div class="form-floating">
+                        <select class="form-select" id="eidasCountry" data-th-field="*{eidasCountry}"
+                                data-th-classappend="${#fields.hasErrors('eidasCountry')} ? 'is-invalid' : ''">
+                            <option value="" selected></option>
+                            <option value="AT">AT</option>
+                            <option value="DK">DK</option>
+                            <option value="DK">BE</option>
+                            <option value="DK">IT</option>
+                        </select>
+                        <label for="eidasCountry">Eidas-Land:</label>
+                        <div id="eidasCountryFeedback" class="invalid-feedback ms-2">Pflichtfeld für eIDAS!</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="eidasLoa" data-th-field="*{eidasLoa}"
+                                data-th-classappend="${#fields.hasErrors('eidasLoa')} ? 'is-invalid' : ''">
+                            <option value="" selected></option>
+                            <option value="LOW">Niedrig</option>
+                            <option value="SUBSTANTIAL">Substantiell</option>
+                            <option value="HIGH">Hoch</option>
+                        </select>
+                        <label for="eidasLoa">Eidas-Vertrauensniveau:</label>
+                        <div id="eidasLoaFeedback" class="invalid-feedback ms-2">Pflichtfeld für eIDAS!</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <p class="mt-2 text-muted">
+                        Land und Vertrauensniveau nur auswählen, wenn Identififizierung mit Eidas.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="status" data-th-field="*{status}">
+                            <option value="OK" selected>Erfolgreich</option>
+                            <option value="CANCEL">Abgebrochen</option>
+                            <option value="ERROR">Fehler</option>
+                        </select>
+                        <label for="status">Status:</label>
+                    </div>
+                </div>
+                <div class="col-3 offset-1">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="domaincontext" value="" data-th-field="*{domainContext}"
+                               data-th-classappend="${#fields.hasErrors('domainContext')} ? 'is-invalid' : ''">
+                        <label for="domaincontext"><span class="text-danger bolder">*</span> fachlicher Kontext:</label>
+                        <div id="domaincontextfeedback" class="invalid-feedback ms-2">Pflichtfeld! (Beispiel: <code>-teamX</code>)</div>
+                    </div>
+                </div>
+                <div class="col-5">
+                    <p class="mt-2 text-muted">
+                        Der Kontext wird in die Email-Adresse (aus <code>name@example.com</code> wird
+                        <code>name<span class="text-success">kontext</span>@example.com</code>) und in die <code>bPK2</code> als Suffix eingefügt.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-2 my-5">
+                <div class="col-12">
+                    <button type="submit" value="submit" id="applyPerson" class="btn btn-primary" style="width:15rem;">Person übernehmen</button>
+                    <button type="cancel" value="cancel" th:formaction="@{__${basepath}__/select/cancel}" class="btn btn-secondary ms-3" style="width:15rem;">Abbrechen</button>
+                </div>
+            </div>
+            <input type="hidden" data-th-field="*{samlRequest}" name="request"/>
+        </form>
+    </div>
+    <footer data-th-replace="~{fragments/snippets :: footer}"></footer>
+</body>
+</html>
