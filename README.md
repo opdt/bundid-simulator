@@ -79,7 +79,17 @@ Formpost wird an den Keycloak zurückgeleitet. Dort werden die Userdaten verarbe
 
 Aufruf der lokalen Anwendung:
 
-    http://localhost:8443/saml
+http://localhost:8080/saml
+
+
+## Lokales Ausführen mit Docker/Podman
+- Zuerst das Docker Image  mit `podman build -t bundid-simulator -f Dockerfile .` bauen.
+Dann kann der `BundID Simulator` wie folgt gestartet werden:
+```
+podman run --rm -it -p 8080:8080 bundid-simulator
+```
+Wenn `Docker` verwendet wird, muss in den obigen Befehlen `podman` durch `docker` ersetzt werden.
+
 
 ## Architektur
 
