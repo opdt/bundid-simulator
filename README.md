@@ -193,4 +193,3 @@ Diese Konfigurationserweiterung beinhaltet folgende Bestandteile:
 - **Wichtig**: Der *basepath* gibt Path innerhalb des Deployments an, sodass die Webressourcen gefunden werden. 
 
 Die Dateien `application.yaml` und `users.yaml` werden in eine Configmap gepackt und als Volume gemountet.
-
