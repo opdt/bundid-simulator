@@ -17,14 +17,30 @@ Der `BundID-Simulator` wurde von der *Bundesagentur für Arbeit* entwickelt und 
 *Keycloak* zur Identifizierung im Portal verwendet. Der Programmcode wird hier öffentlich abgelegt und kann von 
 anderen Behörden verwendet werden, die sich in ähnlichen fachlichen Umfeldern bewegen.
 
+### Hinweis
+
+In der *Bundesagentur für Arbeit* wird diese hier auf *Github* bereitgestellte Version des *BundID-Simulators* in Testumgebungen
+verwendet. Der Code wird aus diesem Grund fortlaufend weiterentwickelt.
+
 ## Architektur und Auslieferung
 
 Der `BundID-Simulator` ist eine Java-Anwendung auf Basis von des Frameworks [Spring Boot](https://spring.io/projects/spring-boot).
-Die Anwendung startet einen Webserver, der die grafische Oberfläche anzeigt. Die Anzeige nutzt das CSS-Framework
-[Bootstrap](https://getbootstrap.com/) sowie die Template-Engine *Thymeleaf* (Bstandteil von *Spring Boot*). Das Projekt 
-wird auf *Github* gebaut und als Docker-Image auf [Docker-Hub](https://hub.docker.com/) veröffentlicht.
+Die Anwendung startet einen Webserver, der die grafische Oberfläche anzeigt. Die UI nutzt das CSS-Framework
+[Bootstrap](https://getbootstrap.com/) sowie die Template-Engine *Thymeleaf* (Bestandteil von *Spring Boot*). 
 
-    baopdt/keycloak-bundid-simulator:<tag>
+Die Anwendung kann via Maven-Build aus dem Sourcecode gebaut werden. Dabei entsteht ein JAR-File, das alle 
+Abhängigkeiten beinhaltet. Der Start erfolgt mit der Java-Runtime:
+
+```
+java -jar bundid-simulator.jar
+```
+
+Eine zweite Variante besteht in der Nutzung eines von *Github* gebauten Docker-Image, das 
+auf [Docker-Hub](https://hub.docker.com/) veröffentlicht wird.
+
+```
+baopdt/bundid-simulator:<tag>
+```    
 
 User können das Image nutzen und in einem Kubernetes-Cluster mit angepasster Konfiguration deployen. Weitere Informationen
 zu diesem Thema später.
@@ -39,11 +55,16 @@ Aufrufers. Die Anwendung zeigt eine UI:
 
 Im oberen Teil wird eine konfigurierbare Personenliste dargestellt. Die in der Abbildung gezeigten Daten sind in der 
 Anwendung enthalten. In der Praxis kann eine Konfigurationsdatei mit anderen Daten verwendet werden. Im unteren 
-Teil der Anwendung werden Details der Indentifizierung festgelegt. Dazu gehören neben dem Status (OK, CANCLE oder ERROR) 
+Teil der Anwendung werden Details der Identifizierung festgelegt. Dazu gehören neben dem Status (`OK`, `CANCEL` oder `ERROR`) 
 das Identifizierungsmittel (beispielweise EID für Identifizierungen mit dem Personalausweis). Für Eidas-Identifizierungen
-wird zusätzlich das Eidas-Land sowie das Eidas-Vertrauensniveu nach BSI-Notiation (substantiell, hoch) angegeben. Die
+wird zusätzlich das Eidas-Land sowie das Eidas-Vertrauensniveau nach BSI-Notiation (substantiell, hoch) angegeben. Die
 Aktion *Person übernehmen* erstellt aus den Personen- und Identifizierungsdaten einen SAML-Response und leitet 
 zum Aufrufer weiter.
+
+> [!NOTE]
+> Die SAML-Spezifikation kennt nur die Status `success` und `error`. Der Abbruch der Identifizierung in der BundID-Anwendung 
+> erhält den SAML-Status `error`. Anhand des Textes in der Detailmessage kann zwischen Abbruch und einem technischen 
+> Fehler unterschieden werden.
 
 Das Element `bPK2` (bereichsspezifischen Personenkennzeichen 2. Version) identifiziert eine Person eindeutig. In den Stammdaten 
 ist jeder Person ein `bPK2` zugeordnet. Um dennoch mehr als die hinterlegte Anzahl Personen verwenden zu können, wird
@@ -60,69 +81,116 @@ sollten angepasst werden.
 
 ## Personendaten anpassen 
 
-Die Liste der angezeigten Personen wird in einer Konfiguration verwaltet. Eine 
+Die Liste der angezeigten Personen wird in einer Konfiguration verwaltet. In der Anwendung ist eine Beispielliste 
+mit 12 Personen (siehe: `src/main/resources/users.yml`) enthalten. Die Datei im yml-Format enthält eine Datensatzliste. Jeder
+Datensatz hat folgendes Formart:
 
+```yaml
+- id: "U01"
+  surname: "Neumann"
+  givenname: "Maria"
+  mail: "maria.neumenn@example.com"
+  postalAddress: "Thomas-Mann-Straße 3"
+  postalCode: "10409"
+  localityName: "Berlin"
+  country: "DE"
+  personalTitle: ""
+  gender: "2"
+  birthdate: "1964-08-12"
+  placeOfBirth: "Berlin"
+  birthName: "Winter"
+  bpk2: "BUNDIDSIM-U01"
+```
 
-## Mission
+Die Schlüssel und Werte/Formate entsprechen der BundID-Spezifikation. Dort sind ebenfalls Angaben zu Pflichtfeldern 
+enthalten. Nutzer des `BundID-Simulators` können selbst Personendaten nach eigenen Vorgaben anlegen. Für 
+Kubernetes-Deploymnents wird diese selbst erstellte Datei mit deployt und über die Springboot-Konfiguration referenziert.
 
-Für die Durchführung von Authentifizierungen via BundID in den Dev-Umgebungen kann die Integrationsumgebung
-von *BundID* nur eingeschränkt verwendet werden. Als Ersatz wird in den DEV-Umgebungen (ausser *main*-Instanz) 
-der `eid-bundid-idpmock` konfiguriert.
+## Lokale Entwicklung/Ausführung
 
-## Funktion
+### Java-Code in einer Entwicklungsumgebung
 
-Nach dem Start der Authentifizierung leitet der *Keycloak* via *SAML* an den `eid-bundid-idpmock`. Diese 
-Anwendung zeigt ein Formular (ähnlich Mock in `Eid-Support`) zur Erfassung der Benutzerdaten an. Nach dem 
-Formpost wird an den Keycloak zurückgeleitet. Dort werden die Userdaten verarbeitet.
+Zum Verständnis der Anwendung und zur Weiterentwicklung kann der Sourcecode von *Github* ausgecheckt und in eine 
+Entwicklungsumgebung (beispielsweise *IntelliJ*) eingebunden werden. Die *SpringBoot*-Anwendug kann in der IDE gestartet 
+werden. Der Aufruf der Url:
 
-## Lokale Entwicklung
+```
+http://localhost:8080/saml
+```
 
-Aufruf der lokalen Anwendung:
+im Browser zeigt die UI. Zu beachten ist, dass der *BundID-Simulator* im realen Betrieb per POST aufgerufen wird. In
+den POST-Parametern sind wichtige Daten für den Programmablauf enthalten. Beim lokalen Aufruf hingegen erfolgt der 
+Aufruf mit der Methode *GET*. Dabei handelt es sich um einen *gefakten* Aufruf mit fest hinterlegten Parametern. Dieser 
+Aufruf dient der einzig der UI-Darstellung.
 
-    http://localhost:8443/saml
+### Lokales Ausführen mit Docker/Podman
 
-## Architektur
+Der Sourcecode kann lokal auch als Docker-Image gebaut und ausgeführt werden:
 
-Der **BundID-Simulator** ist eine Java-Anwendung auf Basis des Frameworks *Springboot*. Für die Web-UI basiert auf dem  
-CSS-Framework *Bootstrap*. In *Springboot* werden die HTML-Seiten mit *Thymeleaf* gerendert (siehe 
-`src/main/resources/views`)..  
+- Jar-File `bundid-simulator.jar` via `mvn clean package` bauen
+- Docker-Image  mit `podman build -t bundid-simulator -f Dockerfile .` bauen.
+- `BundID Simulator` starten:
+```
+podman run --rm -it -p 8080:8080 bundid-simulator
+```
+Wenn `Docker` verwendet wird, muss in den obigen Befehlen `podman` durch `docker` ersetzt werden.
 
-## Funktionsweise
+## Künftige Weiterentwicklungen
 
-Die Webanwendung wird per *POST* über den Endpunkt `/saml` aufgerufen. Als Parmeter im Post-Request sind u.a. das 
-angeforderte Vertrauensniveau und die Rücksprung-Url (*Assertion Consumer Service Url*) enthalten. Der **BundID-Simulator** 
-verhält sich fachlich ähnlich der externen BundID-Anwendung. 
+Der Sourcecode enthält einige Stellen, die auf der BundID-Spezifikation beruhen. Gibt es seitens BundID fachliche 
+Änderungen oder Erweiterungen, müssen Teile des Sourcecodes angepasst werden. Nachfolgend eine Aufzählung:
 
-Nach Bestätigung der Dateneingabe wird ein *Saml-Response* nach BundID-Spezifikation erstellt (siehe 
-`saml_response_template.xml`). Zur Simulation von Fehlern oder Abbrüchen wird das Template `saml_response_error_template.xml`
-verwendet. Die Weiterleitung als POST_Request an den Aufrufer erfolgt über `auth_response.html`. 
+- `resources/field_definitions.yaml`: Enthält alle von BundID unterstützen Attribute 
+- `recources/views/saml_response_template.xml`: XML-Vorlage für den SAML-Response mit Platzhaltern, die später durch Werte ersetzt werden
+- `resources/views/saml_response_error_template.xml`: XML-Vorlage für den SAML-Response im Fehlerfall
 
-### Datenbasis
+## Konfigurationen in eigenen Umgebungen
 
-Alle Attribute für den Response sind in `src/main/resources/field_definitions.yml` definiert. Die Liste mit Personen, 
-die in der Web-UI dargestellt wird, ist in der Datei `src/main/resources/users.xml` abgelegt. Jeder Datensatz hat folgende 
-Form:
+### Keycloak
 
-    id: "U01"
-    surname: "Neumann"
-    givenname: "Maria"
-    mail: "maria.neumenn@ba-online.de"
-    postalAddress: "Thomas-Mann-Straße 3"
-    postalCode: "10409"
-    localityName: "Berlin"
-    country: "DE"
-    personalTitle: ""
-    gender: "2"
-    birthdate: "1964-08-12"
-    placeOfBirth: "Berlin"
-    birthName: "Winter"
-    bpk2: "BUNDIDSIM-U01"
+- Anbindung als Provider ohne Security
 
-Personendaten können in der Definitionsdatei geändert, gelöscht und ergänzt werden.
+### Kubernetes
 
-    Endpunkte: 
-    http://localhost:8080/livez
-    http://localhost:8080/readyz
+Folgendes Szenario ist als Beispiel zu sehen.
 
-    select_view SelectViewController
-    edit_view EditViewController
+- Das Docker-Image kann als Kubernetes-Deployment ausgeführt werden
+- für *LivenessProbe* und *ReadynessProbe* stehen die Endpunkte `/livez` und `/readyz` zur Verfügung
+
+In jedem Fall muss eine Konfiguration `application.yaml` angegeben werden, die die in der Anwendung enthaltene 
+Konfiguration überschreibt/ergänzt. Hier ein Beispiel:
+
+```yaml
+logging:
+  structured:
+    format:
+      console: logstash
+    json:
+      add:
+        context: oiam
+  level:
+    de.ba: info
+    root: warn
+spring:
+  application:
+    name: "ba-bundid-simulator"
+    version: "${IMAGE_TAG}"
+app:
+  basepath: "/oiam/bundidsimulator"
+  env: "Main"
+  web:
+    title: "BundID-Simulator"
+  resources:
+    userdefinition: "file:config/users.yaml"
+```
+
+Diese Konfigurationserweiterung beinhaltet folgende Bestandteile:
+
+- Definition Logging (json-Logging)
+- Festlegung der Log-Level
+- Texte, die im Header/Footer dargestellt werden
+- Ablageort der eignen User-Definition
+- **Wichtig**: Der *basepath* gibt Path innerhalb des Deployments an, sodass die Webressourcen gefunden werden. 
+
+Die Dateien `application.yaml` und `users.yaml` werden in eine Configmap gepackt und als Volume gemountet.
+
