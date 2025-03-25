@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
         name: Checkout Repo
@@ -20,10 +21,10 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{github.actor}}
-          password: ${{ github.token }}
+          password: ${{secrets.GITHUB_TOKEN}}
 
       - name: 'Build and push Image'
         run: |
-          docker build . --tag ghcr.io/baopdt/bundid-simulator:${{ github.ref_name }}
-          docker push ghcr.io/baopdt/bundid-simulator:${{ github.ref_name }}
+          docker build . --tag ghcr.io/opdt/bundid-simulator:${{ github.ref_name }}
+          docker push ghcr.io/opdt/bundid-simulator:${{ github.ref_name }}
 
