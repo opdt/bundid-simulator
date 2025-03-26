@@ -35,11 +35,11 @@ Abhängigkeiten beinhaltet. Der Start erfolgt mit der Java-Runtime:
 java -jar bundid-simulator.jar
 ```
 
-Eine zweite Variante besteht in der Nutzung eines von *Github* gebauten Docker-Image, das 
-auf [Docker-Hub](https://hub.docker.com/) veröffentlicht wird.
+Eine zweite Variante besteht in der Nutzung eines Docker-Image, das 
+in der Github-Registry (siehe: https://github.com/opdt/bundid-simulator/pkgs/container/bundid-simulator) veröffentlicht wird.
 
 ```
-baopdt/bundid-simulator:<tag>
+docker pull ghcr.io/opdt/bundid-simulator:<tag>
 ```    
 
 User können das Image nutzen und in einem Kubernetes-Cluster mit angepasster Konfiguration deployen. Weitere Informationen
